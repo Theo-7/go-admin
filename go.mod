@@ -29,3 +29,5 @@ require (
 	gorm.io/driver/sqlite v1.1.5-0.20201206014648-c84401fbe3ba
 	gorm.io/gorm v1.21.6
 )
+
+replace github.com/go-admin-team/go-admin-core/sdk => ../go-admin-core/sdk

@@ -29,10 +29,11 @@ type SysUser struct {
 // @Success 200 {string} string "{"code": -1, "message": "抱歉未找到相关信息"}"
 // @Router /api/v1/sysUser [get]
 // @Security Bearer
-func (e *SysUser) GetSysUserList(c *gin.Context) {
-	log := e.GetLogger(c)
+func (e SysUser) GetSysUserList(c *gin.Context) {
+	e.Context = c
+	log := e.GetLogger()
 	d := new(dto.SysUserSearch)
-	db, err := e.GetOrm(c)
+	db, err := e.GetOrm()
 	if err != nil {
 		log.Error(err)
 		return
@@ -44,7 +45,7 @@ func (e *SysUser) GetSysUserList(c *gin.Context) {
 	err = req.Bind(c)
 	if err != nil {
 		log.Warnf("Bind error: %s", err.Error())
-		e.Error(c, http.StatusUnprocessableEntity, err, "参数验证失败")
+		e.Error(http.StatusUnprocessableEntity, err, "参数验证失败")
 		return
 	}
 
@@ -58,11 +59,11 @@ func (e *SysUser) GetSysUserList(c *gin.Context) {
 	serviceStudent.Orm = db
 	err = serviceStudent.GetSysUserPage(req, p, &list, &count)
 	if err != nil {
-		e.Error(c, http.StatusInternalServerError, err, "查询失败")
+		e.Error(http.StatusInternalServerError, err, "查询失败")
 		return
 	}
 
-	e.PageOK(c, list, int(count), req.GetPageIndex(), req.GetPageSize(), "查询成功")
+	e.PageOK(list, int(count), req.GetPageIndex(), req.GetPageSize(), "查询成功")
 }
 
 // @Summary 获取用户
@@ -72,10 +73,11 @@ func (e *SysUser) GetSysUserList(c *gin.Context) {
 // @Success 200 {object} response.Response "{"code": 200, "data": [...]}"
 // @Router /api/v1/sysUser/{userId} [get]
 // @Security Bearer
-func (e *SysUser) GetSysUser(c *gin.Context) {
-	log := e.GetLogger(c)
+func (e SysUser) GetSysUser(c *gin.Context) {
+	e.Context = c
+	log := e.GetLogger()
 	control := new(dto.SysUserById)
-	db, err := e.GetOrm(c)
+	db, err := e.GetOrm()
 	if err != nil {
 		log.Error(err)
 		return
@@ -85,7 +87,7 @@ func (e *SysUser) GetSysUser(c *gin.Context) {
 	req := control.Generate()
 	err = req.Bind(c)
 	if err != nil {
-		e.Error(c, http.StatusUnprocessableEntity, err, "参数验证失败")
+		e.Error(http.StatusUnprocessableEntity, err, "参数验证失败")
 		return
 	}
 	var object system.SysUser
@@ -98,11 +100,11 @@ func (e *SysUser) GetSysUser(c *gin.Context) {
 	serviceSysUser.Orm = db
 	err = serviceSysUser.GetSysUser(req, p, &object)
 	if err != nil {
-		e.Error(c, http.StatusUnprocessableEntity, err, "查询失败")
+		e.Error(http.StatusUnprocessableEntity, err, "查询失败")
 		return
 	}
 
-	e.OK(c, object, "查看成功")
+	e.OK(object, "查看成功")
 }
 
 // @Summary 创建用户
@@ -114,10 +116,11 @@ func (e *SysUser) GetSysUser(c *gin.Context) {
 // @Success 200 {string} string	"{"code": 200, "message": "添加成功"}"
 // @Success 200 {string} string	"{"code": -1, "message": "添加失败"}"
 // @Router /api/v1/sysUser [post]
-func (e *SysUser) InsertSysUser(c *gin.Context) {
-	log := e.GetLogger(c)
+func (e SysUser) InsertSysUser(c *gin.Context) {
+	e.Context = c
+	log := e.GetLogger()
 	control := new(dto.SysUserControl)
-	db, err := e.GetOrm(c)
+	db, err := e.GetOrm()
 	if err != nil {
 		log.Error(err)
 		return
@@ -127,13 +130,13 @@ func (e *SysUser) InsertSysUser(c *gin.Context) {
 	req := control.Generate()
 	err = req.Bind(c)
 	if err != nil {
-		e.Error(c, http.StatusUnprocessableEntity, err, "参数验证失败")
+		e.Error(http.StatusUnprocessableEntity, err, "参数验证失败")
 		return
 	}
 	var object common.ActiveRecord
 	object, err = req.GenerateM()
 	if err != nil {
-		e.Error(c, http.StatusInternalServerError, err, "模型生成失败")
+		e.Error(http.StatusInternalServerError, err, "模型生成失败")
 		return
 	}
 	// 设置创建人
@@ -145,11 +148,11 @@ func (e *SysUser) InsertSysUser(c *gin.Context) {
 	err = serviceSysUser.InsertSysUser(object)
 	if err != nil {
 		log.Error(err)
-		e.Error(c, http.StatusInternalServerError, err, "创建失败")
+		e.Error(http.StatusInternalServerError, err, "创建失败")
 		return
 	}
 
-	e.OK(c, object.GetId(), "创建成功")
+	e.OK(object.GetId(), "创建成功")
 }
 
 // @Summary 修改用户数据
@@ -161,11 +164,12 @@ func (e *SysUser) InsertSysUser(c *gin.Context) {
 // @Success 200 {string} string	"{"code": 200, "message": "修改成功"}"
 // @Success 200 {string} string	"{"code": -1, "message": "修改失败"}"
 // @Router /api/v1/sysuser/{userId} [put]
-func (e *SysUser) UpdateSysUser(c *gin.Context) {
+func (e SysUser) UpdateSysUser(c *gin.Context) {
 	control := new(dto.SysUserControl)
 
-	log := e.GetLogger(c)
-	db, err := e.GetOrm(c)
+	e.Context = c
+	log := e.GetLogger()
+	db, err := e.GetOrm()
 	if err != nil {
 		log.Error(err)
 		return
@@ -175,13 +179,13 @@ func (e *SysUser) UpdateSysUser(c *gin.Context) {
 	//更新操作
 	err = req.Bind(c)
 	if err != nil {
-		e.Error(c, http.StatusUnprocessableEntity, err, "参数验证失败")
+		e.Error(http.StatusUnprocessableEntity, err, "参数验证失败")
 		return
 	}
 	var object common.ActiveRecord
 	object, err = req.GenerateM()
 	if err != nil {
-		e.Error(c, http.StatusInternalServerError, err, "模型生成失败")
+		e.Error(http.StatusInternalServerError, err, "模型生成失败")
 		return
 	}
 	object.SetUpdateBy(user.GetUserId(c))
@@ -197,7 +201,7 @@ func (e *SysUser) UpdateSysUser(c *gin.Context) {
 		log.Error(err)
 		return
 	}
-	e.OK(c, object.GetId(), "更新成功")
+	e.OK(object.GetId(), "更新成功")
 }
 
 // @Summary 删除用户数据
@@ -207,11 +211,12 @@ func (e *SysUser) UpdateSysUser(c *gin.Context) {
 // @Success 200 {string} string	"{"code": 200, "message": "删除成功"}"
 // @Success 200 {string} string	"{"code": -1, "message": "删除失败"}"
 // @Router /api/v1/sysuser/{userId} [delete]
-func (e *SysUser) DeleteSysUser(c *gin.Context) {
-	log := e.GetLogger(c)
+func (e SysUser) DeleteSysUser(c *gin.Context) {
+	e.Context = c
+	log := e.GetLogger()
 	control := new(dto.SysUserById)
 
-	db, err := e.GetOrm(c)
+	db, err := e.GetOrm()
 	if err != nil {
 		log.Error(err)
 		return
@@ -222,13 +227,13 @@ func (e *SysUser) DeleteSysUser(c *gin.Context) {
 	err = req.Bind(c)
 	if err != nil {
 		log.Errorf("Bind error: %s", err)
-		e.Error(c, http.StatusUnprocessableEntity, err, "参数验证失败")
+		e.Error(http.StatusUnprocessableEntity, err, "参数验证失败")
 		return
 	}
 	var object common.ActiveRecord
 	object, err = req.GenerateM()
 	if err != nil {
-		e.Error(c, http.StatusInternalServerError, err, "模型生成失败")
+		e.Error(http.StatusInternalServerError, err, "模型生成失败")
 		return
 	}
 
@@ -246,7 +251,7 @@ func (e *SysUser) DeleteSysUser(c *gin.Context) {
 		log.Error(err)
 		return
 	}
-	e.OK(c, object.GetId(), "删除成功")
+	e.OK(object.GetId(), "删除成功")
 }
 
 // @Summary 修改头像
@@ -257,9 +262,10 @@ func (e *SysUser) DeleteSysUser(c *gin.Context) {
 // @Success 200 {string} string	"{"code": 200, "message": "添加成功"}"
 // @Success 200 {string} string	"{"code": -1, "message": "添加失败"}"
 // @Router /api/v1/user/avatar [post]
-func (e *SysUser) InsetSysUserAvatar(c *gin.Context) {
-	log := e.GetLogger(c)
-	db, err := e.GetOrm(c)
+func (e SysUser) InsetSysUserAvatar(c *gin.Context) {
+	e.Context = c
+	log := e.GetLogger()
+	db, err := e.GetOrm()
 	if err != nil {
 		log.Error(err)
 		return
@@ -278,7 +284,7 @@ func (e *SysUser) InsetSysUserAvatar(c *gin.Context) {
 		err = c.SaveUploadedFile(file, filPath)
 		if err != nil {
 			log.Errorf("save file error, %s", err.Error())
-			e.Error(c, http.StatusInternalServerError, err, "")
+			e.Error(http.StatusInternalServerError, err, "")
 			return
 		}
 	}
@@ -295,7 +301,7 @@ func (e *SysUser) InsetSysUserAvatar(c *gin.Context) {
 		log.Error(err)
 		return
 	}
-	e.OK(c, filPath, "修改成功")
+	e.OK(filPath, "修改成功")
 }
 
 // @Summary 重置密码
@@ -307,9 +313,10 @@ func (e *SysUser) InsetSysUserAvatar(c *gin.Context) {
 // @Success 200 {object} response.Response "{"code": 200, "data": [...]}"
 // @Router /api/v1/user/pwd [post]
 // @Security Bearer
-func (e *SysUser) SysUserUpdatePwd(c *gin.Context) {
-	log := e.GetLogger(c)
-	db, err := e.GetOrm(c)
+func (e SysUser) SysUserUpdatePwd(c *gin.Context) {
+	e.Context = c
+	log := e.GetLogger()
+	db, err := e.GetOrm()
 	if err != nil {
 		log.Error(err)
 		return
@@ -319,7 +326,7 @@ func (e *SysUser) SysUserUpdatePwd(c *gin.Context) {
 	err = c.Bind(&pwd)
 	if err != nil {
 		log.Errorf("Bind error: %s", err)
-		e.Error(c, http.StatusUnprocessableEntity, err, "参数验证失败")
+		e.Error(http.StatusUnprocessableEntity, err, "参数验证失败")
 		return
 	}
 
@@ -332,10 +339,10 @@ func (e *SysUser) SysUserUpdatePwd(c *gin.Context) {
 	err = serviceSysUser.UpdateSysUserPwd(user.GetUserId(c), pwd.OldPassword, pwd.NewPassword, p)
 	if err != nil {
 		log.Error(err)
-		e.Error(c, http.StatusForbidden, err, "密码修改失败")
+		e.Error(http.StatusForbidden, err, "密码修改失败")
 		return
 	}
-	e.OK(c, nil, "密码修改成功")
+	e.OK(nil, "密码修改成功")
 }
 
 // @Summary 获取个人中心用户
@@ -344,9 +351,10 @@ func (e *SysUser) SysUserUpdatePwd(c *gin.Context) {
 // @Success 200 {object} response.Response "{"code": 200, "data": [...]}"
 // @Router /api/v1/user/profile [get]
 // @Security Bearer
-func (e *SysUser) GetSysUserProfile(c *gin.Context) {
-	log := e.GetLogger(c)
-	db, err := e.GetOrm(c)
+func (e SysUser) GetSysUserProfile(c *gin.Context) {
+	e.Context = c
+	log := e.GetLogger()
+	db, err := e.GetOrm()
 	if err != nil {
 		log.Error(err)
 		return
@@ -362,10 +370,10 @@ func (e *SysUser) GetSysUserProfile(c *gin.Context) {
 	err = serviceSysUser.GetSysUserProfile(id, user, &roles, &posts)
 	if err != nil {
 		log.Errorf("get user profile error, %s", err.Error())
-		e.Error(c, http.StatusInternalServerError, err, "获取用户信息失败")
+		e.Error(http.StatusInternalServerError, err, "获取用户信息失败")
 		return
 	}
-	e.OK(c, gin.H{
+	e.OK(gin.H{
 		"user":  user,
 		"roles": roles,
 		"posts": posts,
@@ -403,10 +411,11 @@ func (e *SysUser) GetSysUserProfile(c *gin.Context) {
 	//})
 }
 
-func (e *SysUser) GetInfo(c *gin.Context) {
-	log := e.GetLogger(c)
+func (e SysUser) GetInfo(c *gin.Context) {
+	e.Context = c
+	log := e.GetLogger()
 
-	db, err := e.GetOrm(c)
+	db, err := e.GetOrm()
 	if err != nil {
 		log.Error(err)
 		return
@@ -446,7 +455,7 @@ func (e *SysUser) GetInfo(c *gin.Context) {
 	serviceSysUser.Orm = db
 	err = serviceSysUser.GetSysUser(req, p, &sysUser)
 	if err != nil {
-		e.Error(c, http.StatusUnauthorized, err, "登录失败")
+		e.Error(http.StatusUnauthorized, err, "登录失败")
 		return
 	}
 
@@ -460,5 +469,5 @@ func (e *SysUser) GetInfo(c *gin.Context) {
 	mp["userId"] = sysUser.UserId
 	mp["deptId"] = sysUser.DeptId
 	mp["name"] = sysUser.NickName
-	e.OK(c, mp, "")
+	e.OK(mp, "")
 }
